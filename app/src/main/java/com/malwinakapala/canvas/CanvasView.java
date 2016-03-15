@@ -18,30 +18,40 @@ public class CanvasView extends View {
     private double x = 400;
     private double directionY = DOWN;
     private double directionX = RIGHT;
-    private Bitmap redBall;
+    private Bitmap ball2;
+    private Bitmap background;
+    private Bitmap hole;
     private double vx;
     private double vy;
-    private int holeRadius;
+    private int ballRadius;
     private int holeX = 700;
     private int holeY = 600;
     private Random random = new Random();
     private int score = 0;
     private boolean warningVisible;
     private boolean wallCrash;
+    private Paint brush = new Paint();
+    private Paint scorePaint = new Paint();
+    private Paint warningPaint = new Paint();
+    private int counter;
+    private long lastInvalidate;
+
 
     public CanvasView(Context context) {
         super(context);
         init();
     }
-
+;
     public CanvasView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
     private void init() {
-        redBall = BitmapFactory.decodeResource(getResources(), R.mipmap.red_ball);
-        holeRadius = redBall.getWidth() / 2;
+        ball2 = BitmapFactory.decodeResource(getResources(), R.mipmap.ball2);
+        ballRadius = ball2.getWidth() / 2;
+        background = BitmapFactory.decodeResource(getResources(), R.mipmap.background);
+        hole = BitmapFactory.decodeResource(getResources(), R.mipmap. hole);
     }
 
     private void wallCrash() {
@@ -65,60 +75,63 @@ public class CanvasView extends View {
         double distance = Math.sqrt(Math.pow(x - holeX, 2) + Math.pow(y - holeY, 2));
 
         if (distance < 50) {
-            holeX = random.nextInt(getWidth() - holeRadius*2) + holeRadius;
-            holeY = random.nextInt(getHeight() - holeRadius*2) + holeRadius;
+            holeX = random.nextInt(getWidth() - ballRadius *2) + ballRadius;
+            holeY = random.nextInt(getHeight() - ballRadius *2) + ballRadius;
             score = score + 1;
         }
 
-        if (x < holeRadius) {
-            x = holeRadius;
+        if (x < ballRadius) {
+            x = ballRadius;
         }
-        if (y < holeRadius) {
-            y = holeRadius;
+        if (y < ballRadius) {
+            y = ballRadius;
         }
-        if (x >= getWidth() - holeRadius) {
-            x = getWidth() - holeRadius;
+        if (x >= getWidth() - ballRadius) {
+            x = getWidth() - ballRadius;
         }
-        if (y >= getHeight() - holeRadius) {
-            y = getHeight() - holeRadius;
+        if (y >= getHeight() - ballRadius) {
+            y = getHeight() - ballRadius;
         }
-        if (x >= getWidth() - holeRadius) {
+        if (x >= getWidth() - ballRadius) {
             wallCrash();
         }
-        if (y >= getHeight() - holeRadius) {
+        if (y >= getHeight() - ballRadius) {
             wallCrash();
         }
-        if (x <= holeRadius ) {
+        if (x <= ballRadius) {
             wallCrash();
         }
-        if (y <= holeRadius) {
+        if (y <= ballRadius) {
             wallCrash();
         }
-        invalidate();
+        if ( System.currentTimeMillis() - lastInvalidate > 5) {
+            invalidate();
+            lastInvalidate = System.currentTimeMillis();
+        }
     }
 
-    public void changeVelocity(int dx, int dy) {
+    public void changeVelocity(float dx, float dy) {
         vx = dx;
         vy = dy;
         move();
     }
 
     protected void onDraw(Canvas canvas) {
-        Paint brush = new Paint();
-        Paint scorePaint = new Paint();
-        Paint warningPaint = new Paint();
-        scorePaint.setColor(Color.BLUE);
+        scorePaint.setColor(Color.YELLOW);
         scorePaint.setFakeBoldText(true);
         scorePaint.setTextSize(80);
+        canvas.drawText("counter" + counter, 150, 500, scorePaint);
         warningPaint.setColor(Color.RED);
-        warningPaint.setTextSize(100);
+        warningPaint.setTextSize(120);
         brush.setColor(Color.BLACK);
         brush.setStrokeWidth(10);
-        canvas.drawCircle(holeX, holeY, holeRadius, brush);
-        canvas.drawBitmap(redBall, (int) (x - holeRadius), (int) (y - holeRadius), null);
-        canvas.drawText("SCORE: " + score, 70, 250, scorePaint);
+        canvas.drawBitmap(background, 0, 0, null);
+        canvas.drawBitmap(hole, holeX - ballRadius, holeY - ballRadius, null);
+        canvas.drawBitmap(ball2, (int) (x - ballRadius), (int) (y - ballRadius), null);
+        counter = counter + 1;
+        canvas.drawText("SCORE: " + score, 70, 120, scorePaint);
         if (warningVisible) {
-            canvas.drawText("WARNING: -1 SCORE", 700, 1300, warningPaint);
+            canvas.drawText("BOOM!   -1", 700, 1300, warningPaint);
         }
     }
 }
