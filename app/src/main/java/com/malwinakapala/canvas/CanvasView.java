@@ -7,7 +7,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import java.util.Random;
 
 public class CanvasView extends View {
@@ -33,9 +38,8 @@ public class CanvasView extends View {
     private Paint brush = new Paint();
     private Paint scorePaint = new Paint();
     private Paint warningPaint = new Paint();
-    private int counter;
     private long lastInvalidate;
-
+    private int lives = 5;
 
     public CanvasView(Context context) {
         super(context);
@@ -59,6 +63,7 @@ public class CanvasView extends View {
             return;
         }
         score = score - 1;
+        lives = lives -1;
         warningVisible = true;
         postDelayed(new Runnable() {
             @Override
@@ -66,6 +71,21 @@ public class CanvasView extends View {
                 warningVisible = false;
             }
         }, 3000);
+
+        TextView  tv = new TextView(getContext());
+        tv.setTextColor(Color.RED);
+        tv.setTextSize(20);
+        tv.setGravity(Gravity.CENTER_VERTICAL);
+        tv.setText("BOOM!   -1");
+
+        LinearLayout  layout = new LinearLayout(getContext());
+        layout.setBackgroundResource(R.color.black_overlay);
+        layout.addView(tv);
+
+        Toast toast = new Toast(getContext());
+        toast.setView(layout);
+        toast.setGravity(Gravity.BOTTOM, 100, 300);
+        toast.show();
     }
 
     private void move() {
@@ -117,21 +137,21 @@ public class CanvasView extends View {
     }
 
     protected void onDraw(Canvas canvas) {
-        scorePaint.setColor(Color.YELLOW);
+        scorePaint.setColor(Color.BLACK);
         scorePaint.setFakeBoldText(true);
         scorePaint.setTextSize(80);
-        canvas.drawText("counter" + counter, 150, 500, scorePaint);
         warningPaint.setColor(Color.RED);
         warningPaint.setTextSize(120);
-        brush.setColor(Color.BLACK);
         brush.setStrokeWidth(10);
+        brush.setColor(Color.WHITE);
         canvas.drawBitmap(background, 0, 0, null);
         canvas.drawBitmap(hole, holeX - ballRadius, holeY - ballRadius, null);
         canvas.drawBitmap(ball2, (int) (x - ballRadius), (int) (y - ballRadius), null);
-        counter = counter + 1;
-        canvas.drawText("SCORE: " + score, 70, 120, scorePaint);
+        canvas.drawRect(30, 30, 520, 170, brush);
+        canvas.drawRect(getWidth() - 490, 30, getWidth() - 30, 170,  brush);
+        canvas.drawText("SCORE: " + score, 70, 130, scorePaint);
+        canvas.drawText("LIVES: " + lives, getWidth() - 470, 130, scorePaint);
         if (warningVisible) {
-            canvas.drawText("BOOM!   -1", 700, 1300, warningPaint);
         }
     }
 }

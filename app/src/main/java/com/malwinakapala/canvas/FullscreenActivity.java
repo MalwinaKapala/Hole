@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -33,7 +34,6 @@ public class FullscreenActivity extends Activity implements SensorEventListener 
         contentView = (CanvasView) findViewById(R.id.fullscreen_content);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-
     }
 
     @Override
