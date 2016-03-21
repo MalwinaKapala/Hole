@@ -69,7 +69,7 @@ public class CanvasView extends View {
         if (warningVisible) {
             return;
         }
-        score = score - 1;
+        
         lives = lives -1;
         if (lives < 0 ) {
             restartGame();
