@@ -19,8 +19,8 @@ public class CanvasView extends View {
     private static final int DOWN = 1;
     private static final int RIGHT = 1;
 
-    private double y = 550;
-    private double x = 400;
+    private double y;
+    private double x;
     private double directionY = DOWN;
     private double directionX = RIGHT;
     private Bitmap ball2;
@@ -32,14 +32,14 @@ public class CanvasView extends View {
     private int holeX = 700;
     private int holeY = 600;
     private Random random = new Random();
-    private int score = 0;
+    private int score;
     private boolean warningVisible;
     private boolean wallCrash;
     private Paint brush = new Paint();
     private Paint scorePaint = new Paint();
     private Paint warningPaint = new Paint();
     private long lastInvalidate;
-    private int lives = 5;
+    private int lives;
 
     public CanvasView(Context context) {
         super(context);
@@ -56,14 +56,25 @@ public class CanvasView extends View {
         ballRadius = ball2.getWidth() / 2;
         background = BitmapFactory.decodeResource(getResources(), R.mipmap.background);
         hole = BitmapFactory.decodeResource(getResources(), R.mipmap. hole);
+        restartGame();
     }
 
+    private void restartGame() {
+        y = 550;
+        x = 400;
+        score = 0;
+        lives = 5;
+    }
     private void wallCrash() {
         if (warningVisible) {
             return;
         }
         score = score - 1;
         lives = lives -1;
+        if (lives < 0 ) {
+            restartGame();
+            return;
+        }
         warningVisible = true;
         postDelayed(new Runnable() {
             @Override
