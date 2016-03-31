@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -15,7 +16,7 @@ import android.widget.Toast;
 
 import java.util.Random;
 
-public class CanvasView extends View {
+public class CanvasView extends View implements View.OnTouchListener {
     private static final int DOWN = 1;
     private static final int RIGHT = 1;
 
@@ -38,14 +39,18 @@ public class CanvasView extends View {
     private Paint brush = new Paint();
     private Paint scorePaint = new Paint();
     private Paint warningPaint = new Paint();
+    private Paint gameoverPaint = new Paint();
     private long lastInvalidate;
     private int lives;
+    private boolean gameStarted;
 
     public CanvasView(Context context) {
         super(context);
         init();
     }
-;
+
+    ;
+
     public CanvasView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
@@ -55,8 +60,8 @@ public class CanvasView extends View {
         ball2 = BitmapFactory.decodeResource(getResources(), R.mipmap.ball2);
         ballRadius = ball2.getWidth() / 2;
         background = BitmapFactory.decodeResource(getResources(), R.mipmap.background);
-        hole = BitmapFactory.decodeResource(getResources(), R.mipmap. hole);
-        restartGame();
+        hole = BitmapFactory.decodeResource(getResources(), R.mipmap.hole);
+        setOnTouchListener(this);
     }
 
     private void restartGame() {
@@ -64,15 +69,22 @@ public class CanvasView extends View {
         x = 400;
         score = 0;
         lives = 5;
+        gameStarted = true;
     }
+
+    private void gameOver() {
+        gameStarted = false;
+
+    }
+
     private void wallCrash() {
         if (warningVisible) {
             return;
         }
-        
-        lives = lives -1;
-        if (lives < 0 ) {
-            restartGame();
+
+        lives = lives - 1;
+        if (lives == 0) {
+            gameOver();
             return;
         }
         warningVisible = true;
@@ -83,13 +95,13 @@ public class CanvasView extends View {
             }
         }, 3000);
 
-        TextView  tv = new TextView(getContext());
+        TextView tv = new TextView(getContext());
         tv.setTextColor(Color.RED);
         tv.setTextSize(20);
         tv.setGravity(Gravity.CENTER_VERTICAL);
         tv.setText("BOOM!   -1");
 
-        LinearLayout  layout = new LinearLayout(getContext());
+        LinearLayout layout = new LinearLayout(getContext());
         layout.setBackgroundResource(R.color.black_overlay);
         layout.addView(tv);
 
@@ -106,8 +118,8 @@ public class CanvasView extends View {
         double distance = Math.sqrt(Math.pow(x - holeX, 2) + Math.pow(y - holeY, 2));
 
         if (distance < 50) {
-            holeX = random.nextInt(getWidth() - ballRadius *2) + ballRadius;
-            holeY = random.nextInt(getHeight() - ballRadius *2) + ballRadius;
+            holeX = random.nextInt(getWidth() - ballRadius * 2) + ballRadius;
+            holeY = random.nextInt(getHeight() - ballRadius * 2) + ballRadius;
             score = score + 1;
         }
 
@@ -135,16 +147,20 @@ public class CanvasView extends View {
         if (y <= ballRadius) {
             wallCrash();
         }
-        if ( System.currentTimeMillis() - lastInvalidate > 5) {
+        if (System.currentTimeMillis() - lastInvalidate > 5) {
             invalidate();
             lastInvalidate = System.currentTimeMillis();
         }
     }
 
     public void changeVelocity(float dx, float dy) {
-        vx = dx;
-        vy = dy;
-        move();
+        if (gameStarted == false) {
+
+        } else {
+            vx = dx;
+            vy = dy;
+            move();
+        }
     }
 
     protected void onDraw(Canvas canvas) {
@@ -153,16 +169,33 @@ public class CanvasView extends View {
         scorePaint.setTextSize(80);
         warningPaint.setColor(Color.RED);
         warningPaint.setTextSize(120);
+        gameoverPaint.setColor(Color.RED);
+        gameoverPaint.setTextSize(80);
+        gameoverPaint.setFakeBoldText(true);
         brush.setStrokeWidth(10);
         brush.setColor(Color.WHITE);
         canvas.drawBitmap(background, 0, 0, null);
         canvas.drawBitmap(hole, holeX - ballRadius, holeY - ballRadius, null);
         canvas.drawBitmap(ball2, (int) (x - ballRadius), (int) (y - ballRadius), null);
         canvas.drawRect(30, 30, 520, 170, brush);
-        canvas.drawRect(getWidth() - 490, 30, getWidth() - 30, 170,  brush);
+        canvas.drawRect(getWidth() - 490, 30, getWidth() - 30, 170, brush);
+        canvas.drawRect(getWidth() / 2 - 290, getHeight() / 2 - 70, getWidth() / 2 + 290, getHeight() / 2 + 70, brush);
+        canvas.drawRect(getWidth() / 2 - 245, 700, getWidth() / 2 + 245, 700, brush);
         canvas.drawText("SCORE: " + score, 70, 130, scorePaint);
         canvas.drawText("LIVES: " + lives, getWidth() - 470, 130, scorePaint);
-        if (warningVisible) {
+        if (gameStarted == false) {
+            canvas.drawText("START GAME", getWidth() / 2 - 240, getHeight() / 2 + 35, gameoverPaint);
         }
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            float x = event.getX();
+            float y = event.getY();
+
+            restartGame();
+        }
+        return true;
     }
 }
