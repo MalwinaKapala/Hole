@@ -1,12 +1,14 @@
 package com.malwinakapala.canvas;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -39,17 +41,20 @@ public class CanvasView extends View implements View.OnTouchListener {
     private Paint brush = new Paint();
     private Paint scorePaint = new Paint();
     private Paint warningPaint = new Paint();
-    private Paint gameoverPaint = new Paint();
+    private Paint startGamePaint = new Paint();
     private long lastInvalidate;
     private int lives;
     private boolean gameStarted;
+    private boolean gameOverDisplayed;
+
 
     public CanvasView(Context context) {
         super(context);
         init();
     }
 
-    ;
+    Resources r = getResources();
+    float fontSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, r.getDisplayMetrics());
 
     public CanvasView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -65,15 +70,17 @@ public class CanvasView extends View implements View.OnTouchListener {
     }
 
     private void restartGame() {
-        y = 550;
-        x = 400;
+        y = getHeight() / 2;
+        x = getWidth() / 2;
         score = 0;
-        lives = 5;
+        lives = 3;
         gameStarted = true;
+        gameOverDisplayed = false;
     }
 
     private void gameOver() {
         gameStarted = false;
+        gameOverDisplayed = true;
 
     }
 
@@ -136,14 +143,11 @@ public class CanvasView extends View implements View.OnTouchListener {
             y = getHeight() - ballRadius;
         }
         if (x >= getWidth() - ballRadius) {
-            wallCrash();
-        }
+            wallCrash();} else
         if (y >= getHeight() - ballRadius) {
-            wallCrash();
-        }
+            wallCrash();} else
         if (x <= ballRadius) {
-            wallCrash();
-        }
+            wallCrash();} else
         if (y <= ballRadius) {
             wallCrash();
         }
@@ -166,25 +170,29 @@ public class CanvasView extends View implements View.OnTouchListener {
     protected void onDraw(Canvas canvas) {
         scorePaint.setColor(Color.BLACK);
         scorePaint.setFakeBoldText(true);
-        scorePaint.setTextSize(80);
+        scorePaint.setTextSize(fontSize);
         warningPaint.setColor(Color.RED);
         warningPaint.setTextSize(120);
-        gameoverPaint.setColor(Color.RED);
-        gameoverPaint.setTextSize(80);
-        gameoverPaint.setFakeBoldText(true);
+        startGamePaint.setColor(Color.RED);
+        startGamePaint.setTextSize(fontSize);
+        startGamePaint.setFakeBoldText(true);
         brush.setStrokeWidth(10);
         brush.setColor(Color.WHITE);
         canvas.drawBitmap(background, 0, 0, null);
         canvas.drawBitmap(hole, holeX - ballRadius, holeY - ballRadius, null);
         canvas.drawBitmap(ball2, (int) (x - ballRadius), (int) (y - ballRadius), null);
-        canvas.drawRect(30, 30, 520, 170, brush);
+        canvas.drawRect(30, 30, 30 + 490, 30 + fontSize + 20, brush);
         canvas.drawRect(getWidth() - 490, 30, getWidth() - 30, 170, brush);
+        if (gameStarted == false) {
         canvas.drawRect(getWidth() / 2 - 290, getHeight() / 2 - 70, getWidth() / 2 + 290, getHeight() / 2 + 70, brush);
-        canvas.drawRect(getWidth() / 2 - 245, 700, getWidth() / 2 + 245, 700, brush);
+        }
         canvas.drawText("SCORE: " + score, 70, 130, scorePaint);
         canvas.drawText("LIVES: " + lives, getWidth() - 470, 130, scorePaint);
         if (gameStarted == false) {
-            canvas.drawText("START GAME", getWidth() / 2 - 240, getHeight() / 2 + 35, gameoverPaint);
+            canvas.drawText("START GAME", getWidth() / 2 - 240, getHeight() / 2 + 35, startGamePaint);
+        }
+        if (gameOverDisplayed == true) {
+            canvas.drawText("GAME OVER", getWidth() / 2 - 290, 230, warningPaint);
         }
     }
 
@@ -194,7 +202,11 @@ public class CanvasView extends View implements View.OnTouchListener {
             float x = event.getX();
             float y = event.getY();
 
-            restartGame();
+            if ((x >= getWidth() / 2 - 290 && x <= getWidth() / 2 + 290) && (y >= getHeight() / 2 - 70 && y <= getHeight() / 2 + 70)) {
+                if (gameStarted == false) {
+                    restartGame();
+                }
+            }
         }
         return true;
     }
