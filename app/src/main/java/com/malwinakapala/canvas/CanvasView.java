@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -55,7 +56,6 @@ public class CanvasView extends View implements View.OnTouchListener {
 
     Resources r = getResources();
     float fontSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, r.getDisplayMetrics());
-
     public CanvasView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
@@ -173,27 +173,37 @@ public class CanvasView extends View implements View.OnTouchListener {
         scorePaint.setTextSize(fontSize);
         warningPaint.setColor(Color.RED);
         warningPaint.setTextSize(120);
-        startGamePaint.setColor(Color.RED);
-        startGamePaint.setTextSize(fontSize);
-        startGamePaint.setFakeBoldText(true);
+        warningPaint.setTextAlign(Paint.Align.CENTER);
+//        startGamePaint.setColor(Color.RED);
+//        startGamePaint.setTextSize(fontSize);
+//        startGamePaint.setFakeBoldText(true);
         brush.setStrokeWidth(10);
         brush.setColor(Color.WHITE);
         canvas.drawBitmap(background, 0, 0, null);
         canvas.drawBitmap(hole, holeX - ballRadius, holeY - ballRadius, null);
         canvas.drawBitmap(ball2, (int) (x - ballRadius), (int) (y - ballRadius), null);
-        canvas.drawRect(30, 30, 30 + 490, 30 + fontSize + 20, brush);
-        canvas.drawRect(getWidth() - 490, 30, getWidth() - 30, 170, brush);
+        float width = 49 * fontSize / 8;
+        float height = 14 * fontSize / 8;
+        canvas.drawRect(30, 30, 30 + width, 30 + height, brush);
+        canvas.drawRect(getWidth() - width - 30, 30, getWidth() - 30, height + 30, brush);
         if (gameStarted == false) {
         canvas.drawRect(getWidth() / 2 - 290, getHeight() / 2 - 70, getWidth() / 2 + 290, getHeight() / 2 + 70, brush);
         }
-        canvas.drawText("SCORE: " + score, 70, 130, scorePaint);
-        canvas.drawText("LIVES: " + lives, getWidth() - 470, 130, scorePaint);
+        drawTextCentred(canvas, scorePaint, "Score: " + score, 70, 30 + height / 2);
+        drawTextCentred(canvas, scorePaint, "Lives: " + lives, getWidth() - width + 30, 30 + height / 2);
         if (gameStarted == false) {
-            canvas.drawText("START GAME", getWidth() / 2 - 240, getHeight() / 2 + 35, startGamePaint);
+            drawTextCentred(canvas, scorePaint, "START GAME", getWidth() / 2 - width / 2, getHeight() / 2);
         }
         if (gameOverDisplayed == true) {
-            canvas.drawText("GAME OVER", getWidth() / 2 - 290, 230, warningPaint);
+            drawTextCentred(canvas, warningPaint, "GAME OVER", getWidth() / 2, getHeight() / 4);
         }
+    }
+
+    private final Rect textBounds = new Rect(); //don't new this up in a draw method
+
+    public void drawTextCentred(Canvas canvas, Paint paint, String text, float cx, float cy){
+        paint.getTextBounds(text, 0, text.length(), textBounds);
+        canvas.drawText(text, cx, cy - textBounds.exactCenterY(), paint);
     }
 
     @Override
